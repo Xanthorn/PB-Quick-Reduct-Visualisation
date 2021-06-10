@@ -9,25 +9,12 @@ namespace Quick_Reduct_Visualisation.Models
 {
     public class Data
     {
-        public List<string> attributes =  new List<string>  { "twardość", "kolor", "wielkość", "dec" };
-        public List<List<string>> dataSets = new List<List<string>>
-        {
-            new List<string>{"miękkie", "fioletowe", "duże", "dojrzałe"},
-            new List<string>{"miękkie", "żółte", "duże", "dojrzałe"},
-            new List<string>{"miękkie", "zielone", "średnie", "dojrzałe"},
-            new List<string>{"miękkie", "zielone", "średnie", "niedojrzałe"},
-            new List<string>{"średnie", "fioletowe", "duże", "dojrzałe"},
-            new List<string>{"średnie", "żółte", "małe", "dojrzałe"},
-            new List<string>{"średnie", "żółte", "małe", "niedojrzałe"},
-            new List<string>{"średnie", "zielone", "średnie", "niedojrzałe"},
-            new List<string>{"twarde", "fioletowe", "średnie", "dojrzałe"},
-            new List<string>{"twarde", "żółte", "małe", "dojrzałe"},
-            new List<string>{"twarde", "żółte", "małe", "niedojrzałe"},
-            new List<string>{"twarde", "zielone", "duże", "niedojrzałe"}
-        };
-        //public List<string>[][] 
-        public List<List<List<string>>> differenceTable = new();
-        public Dictionary<string, int> differencesCount = new();
+        public string[] attributes; // Attributes which describes values in datasets
+        public List<string[]> dataSets;
+        public string[,,] differenceTable; // Store differences between of each attribute of dataset
+        public string[,] differenceTableResults; // Store all of differences in trimmed string (for showing in data grid purpose)
+        public Dictionary<string, int> differenceTableCount = new(); // Used to count which attribute appears most frequently in the results of the difference table 
+        public List<string> reduct;
         private string filePath;
 
         private void GetFilePath()
@@ -47,16 +34,43 @@ namespace Quick_Reduct_Visualisation.Models
             {
                 filePath = fileDialog.FileName;
             }
+            else
+            {
+                GetFilePath();
+            }
         }
 
         public void GetData()
         {
+            // Get file path
             GetFilePath();
-            using(var reader = new StreamReader(filePath))
+            while (!filePath.Contains(".txt"))
+                GetFilePath();
+
+            using(StreamReader reader = new StreamReader(filePath))
             {
+                if (attributes == null)
+                {
+                    attributes = reader.ReadLine().Split(" | ");
+                }
 
+                reduct = new();
+
+                dataSets = new List<string[]>();
+
+                string line;
+                while((line = reader.ReadLine()) != null)
+                {
+                    string[] dataSet = line.Split(" | ");
+                    dataSets.Add(dataSet);
+                }
+
+                differenceTable = new string[dataSets.Count(), dataSets.Count(), attributes.Length - 1];
+                differenceTableResults = new string[dataSets.Count(), dataSets.Count()];
+
+                for (int i = 0; i < attributes.Length; i++)
+                    differenceTableCount.Add(attributes[i], 0);
             }
-
         }
     }
 }
