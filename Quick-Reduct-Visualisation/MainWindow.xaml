@@ -5,8 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Quick_Reduct_Visualisation"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Quick-Reduct-Visualisation" Height="450" Width="800">
     <Grid>
-
+        <Button Name="action" Click="CellByCell" Height="20" Width="20" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+        <DataGrid Height="auto" Width="auto" HorizontalAlignment="Center" 
+         Name="dataGrid" VerticalAlignment="Center" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto" />
+        <DataGrid Height="auto" Width="auto" HorizontalAlignment="Right"  
+         Name="dataCountGrid" VerticalAlignment="Center" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto" />
+        <DataGrid Height="auto" Width="auto" HorizontalAlignment="Center"  
+         Name="dataResultGrid" VerticalAlignment="Bottom" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto" />
     </Grid>
 </Window>
