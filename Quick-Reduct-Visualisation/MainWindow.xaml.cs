@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Quick_Reduct_Visualisation
 {
@@ -24,9 +25,15 @@ namespace Quick_Reduct_Visualisation
     public partial class MainWindow : Window
     {
         public Algorithms algorithms = new();
+        public DispatcherTimer myTimer;
+        public bool stopTheCount = false;
         public MainWindow()
         {
             InitializeComponent();
+            myTimer = new DispatcherTimer();
+            myTimer.Tick += new EventHandler(AutomaticCells);
+            myTimer.Interval = new TimeSpan(0,0,0,0,1);
+            myTimer.Start();
         }
 
         public void UpdateDataGrid()
@@ -90,7 +97,8 @@ namespace Quick_Reduct_Visualisation
             }
 
             dataCountGrid.ItemsSource = dt2.DefaultView;
-
+            if (stopTheCount==true)
+                return;
             DataTable dt3 = new DataTable();
             int nbColumns3 = 1;
             int nbRows3 = algorithms.data.reduct.Count;
@@ -111,17 +119,91 @@ namespace Quick_Reduct_Visualisation
             }
 
             dataResultGrid.ItemsSource = dt3.DefaultView;
+
         }
 
         private void CellByCell(object sender, RoutedEventArgs e)
         {
+            if (stopTheCount == true)
+            {
+                myTimer.Stop();
+                action.Visibility = Visibility.Hidden;
+                starter.Visibility = Visibility.Hidden;
+                stopper.Visibility = Visibility.Hidden;
+                resultText.Text = "(";
+                foreach(string s in algorithms.data.reduct)
+                {
+                    resultText.Text += s + ",";
+                }
+                resultText.Text = resultText.Text.Remove(resultText.Text.Length - 1);
+                resultText.Text +=")";
+                MessageBox.Show("Reduct is: " + resultText.Text);
+                return;
+            }
+                
             for (int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
             {
                 algorithms.CalculateQuickReduct();
             }
-
+            int zeroCount = 0;
+            foreach (int i in algorithms.data.differenceTableCount.Values)
+            {
+                if (i == 0 && algorithms.tryMeNow==true)
+                    zeroCount++;
+            }
+            if (zeroCount == algorithms.data.differenceTableCount.Count)
+            {
+                stopTheCount = true;
+            }
             UpdateDataGrid();
             algorithms.k = 0;
+            
         }
+        private void AutomaticCells(object sender, EventArgs e)
+        {
+            if (stopTheCount == true)
+            {
+                myTimer.Stop();
+                action.Visibility = Visibility.Hidden;
+                starter.Visibility = Visibility.Hidden;
+                stopper.Visibility = Visibility.Hidden;
+                resultText.Text = "(";
+                foreach (string s in algorithms.data.reduct)
+                {
+                    resultText.Text += s + ",";
+                }
+                resultText.Text = resultText.Text.Remove(resultText.Text.Length - 1);
+                resultText.Text += ")";
+                MessageBox.Show("Reduct is: " + resultText.Text);
+                return;
+            }
+            textBlox.Text = (Convert.ToInt32(textBlox.Text) + 1).ToString(); 
+            for (int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
+            {
+                algorithms.CalculateQuickReduct();
+            }
+            int zeroCount = 0;
+            foreach (int i in algorithms.data.differenceTableCount.Values)
+            {
+                if (i == 0 && algorithms.tryMeNow == true)
+                    zeroCount++;
+            }
+            if (zeroCount == algorithms.data.differenceTableCount.Count)
+            {
+                stopTheCount = true;
+            }
+            UpdateDataGrid();
+            algorithms.k = 0;
+            
+        }
+        private void StopAuto(object sender, RoutedEventArgs e)
+        {
+            myTimer.Stop();
+        }
+        private void StartAuto(object sender, RoutedEventArgs e)
+        {
+            myTimer.Start();
+        }
+
     }
 }

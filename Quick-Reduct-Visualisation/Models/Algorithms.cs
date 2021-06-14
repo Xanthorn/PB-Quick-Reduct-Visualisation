@@ -10,6 +10,7 @@ namespace Quick_Reduct_Visualisation.Models
     {
         public Data data = new();
         public int i, j, k, cycles;
+        public bool tryMeNow;
 
         public Algorithms()
         {
@@ -18,6 +19,7 @@ namespace Quick_Reduct_Visualisation.Models
             i = 0;
             j = 0;
             k = 0;
+            tryMeNow = false;
             cycles = 0;
         }
 
@@ -36,6 +38,7 @@ namespace Quick_Reduct_Visualisation.Models
 
         private void CalculateDifference()
         {
+            tryMeNow = false;
             if (i == j || data.dataSets[i][^1] == data.dataSets[j][^1]) // if on diagonal or datasets have same outputs
             {
                 data.differenceTable[i, j, k] = "0";
@@ -94,10 +97,18 @@ namespace Quick_Reduct_Visualisation.Models
             else
             {
                 CalculateQualityOfTheClassificationApproximation();
-                FindMostFrequentlyAppearedAttribute();
+                int zeroCount = 0;
+                foreach (int i in data.differenceTableCount.Values)
+                {
+                    if(i==0)
+                        zeroCount++;
+                }
+                if (zeroCount != data.differenceTableCount.Count)
+                    FindMostFrequentlyAppearedAttribute();
                 ReinitialiseParameters();
                 data.differenceTableResults = new string[data.dataSets.Count(), data.dataSets.Count()];
                 cycles++;
+                tryMeNow = true;
             }
         }
 
