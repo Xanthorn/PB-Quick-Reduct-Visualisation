@@ -30,13 +30,14 @@
         <Button Grid.Row="2" Name="starter" Content="Start auto" Click="StartAuto" Visibility="Visible" IsEnabled="False"/>
         <Button Grid.Row="3" Name="prereduct" Content="Prereduct" Click="CellToPrereductTimer" Visibility="Visible" IsEnabled="False"/>
         <Button Grid.Row="4" Name="restart" Content="Restart" Click="Restart" Visibility="Visible" IsEnabled="False"/>
+        <Button Grid.Row="4" Grid.Column="2" Name="save" Content="Save state to file" Click="DataToJson" Visibility="Visible" IsEnabled="False"/>
         
         <DataGrid Name="dataGrid" Grid.Row="1" Grid.Column="1" Grid.RowSpan="4" VerticalAlignment="Stretch" 
          HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto"    
          HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"   
          CanUserReorderColumns="False"  IsReadOnly="True" CanUserSortColumns = "False" AreRowDetailsFrozen="True" />
 
-        <DataGrid Name="dataCountGrid" Grid.Row="1" Grid.Column="2" Grid.RowSpan="4" VerticalAlignment="Stretch" 
+        <DataGrid Name="dataCountGrid" Grid.Row="1" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Stretch" 
         HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50" ColumnWidth="auto" IsReadOnly="True" />
         
     </Grid>

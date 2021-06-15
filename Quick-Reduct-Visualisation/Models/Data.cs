@@ -15,7 +15,7 @@ namespace Quick_Reduct_Visualisation.Models
         public string[,] differenceTableResults; // Store all of differences in trimmed string (for showing in data grid purpose)
         public Dictionary<string, int> differenceTableCount = new(); // Used to count which attribute appears most frequently in the results of the difference table 
         public List<string> reduct;
-        private string filePath;
+        public string filePath;
 
         private void GetFilePath()
         {
@@ -24,7 +24,7 @@ namespace Quick_Reduct_Visualisation.Models
 
             // Set filter for file extension and default file extension
             fileDialog.DefaultExt = ".txt";
-            fileDialog.Filter = "txt files (*.txt)|*.txt";
+            fileDialog.Filter = "txt files (*.txt)|*.txt|kek savestates (*.kek)|*.kek";
 
             // Open File Dialog
             bool? result = fileDialog.ShowDialog();
@@ -34,18 +34,17 @@ namespace Quick_Reduct_Visualisation.Models
             {
                 filePath = fileDialog.FileName;
             }
-            else
-            {
-                GetFilePath();
-            }
+
         }
 
         public void GetData()
         {
             // Get file path
             GetFilePath();
-            while (!filePath.Contains(".txt"))
-                GetFilePath();
+            if (filePath==null||filePath.Contains(".kek"))
+            {
+                return;
+            }
 
             using(StreamReader reader = new StreamReader(filePath))
             {

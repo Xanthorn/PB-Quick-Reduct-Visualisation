@@ -11,7 +11,7 @@ namespace Quick_Reduct_Visualisation.Models
         public Data data = new();
         public int i, j, k, cycles;
         public bool tryMeNow;
-
+        public bool stopTheCount = false;
         public Algorithms()
         {
             data = new();
@@ -44,6 +44,7 @@ namespace Quick_Reduct_Visualisation.Models
             data.differenceTable = new string[data.dataSets.Count(), data.dataSets.Count(), data.attributes.Length - 1];
             data.differenceTableResults = new string[data.dataSets.Count(), data.dataSets.Count()];
             data.reduct = new();
+            stopTheCount = false;
             for (int i = 0; i < data.attributes.Length; i++)
                 data.differenceTableCount[$"{data.attributes[i]}"] = 0;
            

@@ -1,7 +1,9 @@
-﻿using Quick_Reduct_Visualisation.Models;
+﻿using Newtonsoft.Json;
+using Quick_Reduct_Visualisation.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -25,18 +27,37 @@ namespace Quick_Reduct_Visualisation
     public partial class MainWindow : Window
     {
         public Algorithms algorithms = new();
-        public DispatcherTimer myTimer,preductTimer;
-        public bool stopTheCount = false;
+        public DispatcherTimer myTimer, preductTimer;
         public MainWindow()
         {
             InitializeComponent();
             myTimer = new DispatcherTimer();
             myTimer.Tick += new EventHandler(AutomaticCells);
-            myTimer.Interval = new TimeSpan(0,0,0,0,1);
+            myTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
             preductTimer = new DispatcherTimer();
             preductTimer.Tick += new EventHandler(CellToPrereduct);
             preductTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
 
+        }
+        public void DataToJson(object sender, RoutedEventArgs e)
+        {
+            string jsonData = JsonConvert.SerializeObject(algorithms);
+            //string programPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            //string savePath = programPath + "\\savestate.kek";
+            //File.WriteAllText(savePath, jsonData);
+
+            Microsoft.Win32.SaveFileDialog fileDialog = new Microsoft.Win32.SaveFileDialog();
+            fileDialog.FileName = "savestate"; 
+            fileDialog.DefaultExt = ".kek"; 
+            fileDialog.Filter = "kek savestates (*.kek)|*.kek"; 
+
+            bool? result = fileDialog.ShowDialog();
+
+            if (result == true)
+            {
+                File.WriteAllText(fileDialog.FileName, jsonData);
+            }
+            
         }
         public void UpdateDataGrid()
         {
@@ -103,6 +124,9 @@ namespace Quick_Reduct_Visualisation
             starter.IsEnabled = false;
             stopper.IsEnabled = false;
             prereduct.IsEnabled = false;
+            save.IsEnabled = true;
+            loadData.IsEnabled = true;
+            restart.IsEnabled = true;
             resultText.Text = "(";
             foreach (string s in algorithms.data.reduct)
             {
@@ -127,7 +151,7 @@ namespace Quick_Reduct_Visualisation
             }
             if (zeroCount == algorithms.data.differenceTableCount.Count)
             {
-                stopTheCount = true;
+                algorithms.stopTheCount = true;
             }
             UpdateDataGrid();
             algorithms.k = 0;
@@ -135,7 +159,7 @@ namespace Quick_Reduct_Visualisation
         private void CellByCell(object sender, RoutedEventArgs e)
         {
             CalculateAndDisplay();
-            if (stopTheCount == true)
+            if (algorithms.stopTheCount == true)
             {
                 ShowResults();
             }
@@ -143,7 +167,7 @@ namespace Quick_Reduct_Visualisation
         private void AutomaticCells(object sender, EventArgs e)
         {
             CalculateAndDisplay();
-            if (stopTheCount == true)
+            if (algorithms.stopTheCount == true)
             {
                 myTimer.Stop();
                 ShowResults();
@@ -152,7 +176,7 @@ namespace Quick_Reduct_Visualisation
         private void CellToPrereduct(object sender, EventArgs e)
         {
             CalculateAndDisplay();
-            if (stopTheCount == true)
+            if (algorithms.stopTheCount == true)
             {
                 ShowResults();
             }
@@ -160,52 +184,76 @@ namespace Quick_Reduct_Visualisation
             {
                 preductTimer.Stop();
                 starter.IsEnabled = true;
-                oneStep.IsEnabled = true;
-                restart.IsEnabled = true;
-                prereduct.IsEnabled = true;
+                EnableCommonButtons();
             }
         }
         private void CellToPrereductTimer(object sender, RoutedEventArgs e)
         {
             preductTimer.Start();
             starter.IsEnabled = false;
-            oneStep.IsEnabled = false;
-            restart.IsEnabled = false;
-            prereduct.IsEnabled = false;
+            DisableCommonButtons();
         }
         private void StopAuto(object sender, RoutedEventArgs e)
         {
             myTimer.Stop();
             stopper.Visibility = Visibility.Hidden;
             starter.Visibility = Visibility.Visible;
-            oneStep.IsEnabled = true;
-            prereduct.IsEnabled = true;
-            restart.IsEnabled = true;
+            EnableCommonButtons();
         }
         private void StartAuto(object sender, RoutedEventArgs e)
         {
             myTimer.Start();
             starter.Visibility = Visibility.Hidden;
             stopper.Visibility = Visibility.Visible;
+            DisableCommonButtons();
+        }
+        private void EnableCommonButtons()
+        {
+            oneStep.IsEnabled = true;
+            prereduct.IsEnabled = true;
+            restart.IsEnabled = true;
+            save.IsEnabled = true;
+            loadData.IsEnabled = true;
+        }
+        private void DisableCommonButtons()
+        {
             oneStep.IsEnabled = false;
             prereduct.IsEnabled = false;
             restart.IsEnabled = false;
+            save.IsEnabled = false;
+            loadData.IsEnabled = false;
         }
 
         private void Restart(object sender, RoutedEventArgs e)
         {
             algorithms.Restart();
             UpdateDataGrid();
+            EnableCommonButtons();
+            stopper.Visibility = Visibility.Hidden;
+            starter.Visibility = Visibility.Visible;
+            starter.IsEnabled = true;
+            stopper.IsEnabled = true;
         }
 
         private void LoadData(object sender, RoutedEventArgs e)
         {
+            algorithms = new Algorithms();
             algorithms.data.GetData();
-            oneStep.IsEnabled = true;
+            if (algorithms.data.filePath == null)
+                return;
+            else if (algorithms.data.filePath.Contains(".kek"))
+            {
+                algorithms = JsonConvert.DeserializeObject<Algorithms>(File.ReadAllText(algorithms.data.filePath));
+                UpdateDataGrid();
+                if (algorithms.stopTheCount == true)
+                    ShowResults();
+            }
+            else UpdateDataGrid();
+            if (algorithms.stopTheCount == true)
+                return;
             starter.IsEnabled = true;
             stopper.IsEnabled = true;
-            restart.IsEnabled = true;
-            prereduct.IsEnabled = true;
+            EnableCommonButtons();
         }
     }
 }
