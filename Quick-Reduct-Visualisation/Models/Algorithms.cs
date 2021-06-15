@@ -15,7 +15,6 @@ namespace Quick_Reduct_Visualisation.Models
         public Algorithms()
         {
             data = new();
-            data.GetData();
             i = 0;
             j = 0;
             k = 0;
@@ -34,6 +33,20 @@ namespace Quick_Reduct_Visualisation.Models
             i = 0;
             j = 0;
             k = 0;
+        }
+        public void Restart()
+        {
+            cycles = 0;
+            i = 0;
+            j = 0;
+            k = 0;
+            tryMeNow = false;
+            data.differenceTable = new string[data.dataSets.Count(), data.dataSets.Count(), data.attributes.Length - 1];
+            data.differenceTableResults = new string[data.dataSets.Count(), data.dataSets.Count()];
+            data.reduct = new();
+            for (int i = 0; i < data.attributes.Length; i++)
+                data.differenceTableCount[$"{data.attributes[i]}"] = 0;
+           
         }
 
         private void CalculateDifference()
