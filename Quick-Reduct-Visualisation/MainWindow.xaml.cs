@@ -25,7 +25,7 @@ namespace Quick_Reduct_Visualisation
     public partial class MainWindow : Window
     {
         public Algorithms algorithms = new();
-        public DispatcherTimer myTimer;
+        public DispatcherTimer myTimer,preductTimer;
         public bool stopTheCount = false;
         public MainWindow()
         {
@@ -33,8 +33,11 @@ namespace Quick_Reduct_Visualisation
             myTimer = new DispatcherTimer();
             myTimer.Tick += new EventHandler(AutomaticCells);
             myTimer.Interval = new TimeSpan(0,0,0,0,1);
-        }
+            preductTimer = new DispatcherTimer();
+            preductTimer.Tick += new EventHandler(CellToPrereduct);
+            preductTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
 
+        }
         public void UpdateDataGrid()
         {
             DataTable dt = new DataTable();
@@ -49,7 +52,6 @@ namespace Quick_Reduct_Visualisation
                 }
                 dt.Columns.Add($"x{i}");
             }
-
             for (int row = 0; row < nbRows; row++)
             {
                 DataRow dr = dt.NewRow();
@@ -64,10 +66,7 @@ namespace Quick_Reduct_Visualisation
                 }
                 dt.Rows.Add(dr);
             }
-            
-
             dataGrid.ItemsSource = dt.DefaultView;
-
             DataTable dt2 = new DataTable();
             int nbColumns2 = 2;
             int nbRows2 = algorithms.data.differenceTableCount.Count - 1;
@@ -80,7 +79,6 @@ namespace Quick_Reduct_Visualisation
                 }
                 dt2.Columns.Add("Value");
             }
-
             for (int row = 0; row < nbRows2; row++)
             {
                 DataRow dr2 = dt2.NewRow();
@@ -95,59 +93,28 @@ namespace Quick_Reduct_Visualisation
                 }
                 dt2.Rows.Add(dr2);
             }
-
             dataCountGrid.ItemsSource = dt2.DefaultView;
         }
-
-        private void CellByCell(object sender, RoutedEventArgs e)
+        private void ShowResults()
         {
-            if (stopTheCount == true)
+            starter.Visibility = Visibility.Visible;
+            stopper.Visibility = Visibility.Hidden;
+            oneStep.IsEnabled = false;
+            starter.IsEnabled = false;
+            stopper.IsEnabled = false;
+            prereduct.IsEnabled = false;
+            resultText.Text = "(";
+            foreach (string s in algorithms.data.reduct)
             {
-                myTimer.Stop();
-                resultText.Text = "(";
-                foreach(string s in algorithms.data.reduct)
-                {
-                    resultText.Text += s + ",";
-                }
-                resultText.Text = resultText.Text.Remove(resultText.Text.Length - 1);
-                resultText.Text +=")";
-                MessageBox.Show("Reduct is: " + resultText.Text);
-                return;
+                resultText.Text += s + ",";
             }
-                
-            for (int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
-            {
-                algorithms.CalculateQuickReduct();
-            }
-            int zeroCount = 0;
-            foreach (int i in algorithms.data.differenceTableCount.Values)
-            {
-                if (i == 0 && algorithms.tryMeNow==true)
-                    zeroCount++;
-            }
-            if (zeroCount == algorithms.data.differenceTableCount.Count)
-            {
-                stopTheCount = true;
-            }
-            UpdateDataGrid();
-            algorithms.k = 0;
-            
+            resultText.Text = resultText.Text.Remove(resultText.Text.Length - 1);
+            resultText.Text += ")";
+            MessageBox.Show("Reduct is: " + resultText.Text);
+            return;
         }
-        private void AutomaticCells(object sender, EventArgs e)
+        private void CalculateAndDisplay()
         {
-            if (stopTheCount == true)
-            {
-                myTimer.Stop();
-                resultText.Text = "(";
-                foreach (string s in algorithms.data.reduct)
-                {
-                    resultText.Text += s + ",";
-                }
-                resultText.Text = resultText.Text.Remove(resultText.Text.Length - 1);
-                resultText.Text += ")";
-                MessageBox.Show("Reduct is: " + resultText.Text);
-                return;
-            }
             for (int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
             {
                 algorithms.CalculateQuickReduct();
@@ -164,21 +131,65 @@ namespace Quick_Reduct_Visualisation
             }
             UpdateDataGrid();
             algorithms.k = 0;
-            
+        }
+        private void CellByCell(object sender, RoutedEventArgs e)
+        {
+            CalculateAndDisplay();
+            if (stopTheCount == true)
+            {
+                ShowResults();
+            }
+        }
+        private void AutomaticCells(object sender, EventArgs e)
+        {
+            CalculateAndDisplay();
+            if (stopTheCount == true)
+            {
+                myTimer.Stop();
+                ShowResults();
+            }
+        }
+        private void CellToPrereduct(object sender, EventArgs e)
+        {
+            CalculateAndDisplay();
+            if (stopTheCount == true)
+            {
+                ShowResults();
+            }
+            if (algorithms.tryMeNow == true)
+            {
+                preductTimer.Stop();
+                starter.IsEnabled = true;
+                oneStep.IsEnabled = true;
+                restart.IsEnabled = true;
+                prereduct.IsEnabled = true;
+            }
+        }
+        private void CellToPrereductTimer(object sender, RoutedEventArgs e)
+        {
+            preductTimer.Start();
+            starter.IsEnabled = false;
+            oneStep.IsEnabled = false;
+            restart.IsEnabled = false;
+            prereduct.IsEnabled = false;
         }
         private void StopAuto(object sender, RoutedEventArgs e)
         {
             myTimer.Stop();
             stopper.Visibility = Visibility.Hidden;
             starter.Visibility = Visibility.Visible;
-            oneStep.Visibility = Visibility.Visible;
+            oneStep.IsEnabled = true;
+            prereduct.IsEnabled = true;
+            restart.IsEnabled = true;
         }
         private void StartAuto(object sender, RoutedEventArgs e)
         {
             myTimer.Start();
             starter.Visibility = Visibility.Hidden;
             stopper.Visibility = Visibility.Visible;
-            oneStep.Visibility = Visibility.Hidden;
+            oneStep.IsEnabled = false;
+            prereduct.IsEnabled = false;
+            restart.IsEnabled = false;
         }
 
         private void Restart(object sender, RoutedEventArgs e)
@@ -190,9 +201,11 @@ namespace Quick_Reduct_Visualisation
         private void LoadData(object sender, RoutedEventArgs e)
         {
             algorithms.data.GetData();
-            oneStep.Visibility = Visibility.Visible;
-            starter.Visibility = Visibility.Visible;
-            restart.Visibility = Visibility.Visible;
+            oneStep.IsEnabled = true;
+            starter.IsEnabled = true;
+            stopper.IsEnabled = true;
+            restart.IsEnabled = true;
+            prereduct.IsEnabled = true;
         }
     }
 }
