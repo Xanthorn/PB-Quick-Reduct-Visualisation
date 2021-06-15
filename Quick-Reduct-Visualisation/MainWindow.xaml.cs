@@ -33,7 +33,6 @@ namespace Quick_Reduct_Visualisation
             myTimer = new DispatcherTimer();
             myTimer.Tick += new EventHandler(AutomaticCells);
             myTimer.Interval = new TimeSpan(0,0,0,0,1);
-            myTimer.Start();
         }
 
         public void UpdateDataGrid()
@@ -65,6 +64,7 @@ namespace Quick_Reduct_Visualisation
                 }
                 dt.Rows.Add(dr);
             }
+            
 
             dataGrid.ItemsSource = dt.DefaultView;
 
@@ -97,29 +97,6 @@ namespace Quick_Reduct_Visualisation
             }
 
             dataCountGrid.ItemsSource = dt2.DefaultView;
-            if (stopTheCount==true)
-                return;
-            DataTable dt3 = new DataTable();
-            int nbColumns3 = 1;
-            int nbRows3 = algorithms.data.reduct.Count;
-            for (int i = 0; i < nbColumns3; i++)
-            {
-                
-                dt3.Columns.Add("Result");
-            }
-
-            for (int row = 0; row < nbRows3; row++)
-            {
-                DataRow dr3 = dt3.NewRow();
-                for (int col = 0; col < nbColumns3; col++)
-                {
-                    dr3[col] = algorithms.data.reduct[row];
-                }
-                dt3.Rows.Add(dr3);
-            }
-
-            dataResultGrid.ItemsSource = dt3.DefaultView;
-
         }
 
         private void CellByCell(object sender, RoutedEventArgs e)
@@ -127,9 +104,6 @@ namespace Quick_Reduct_Visualisation
             if (stopTheCount == true)
             {
                 myTimer.Stop();
-                action.Visibility = Visibility.Hidden;
-                starter.Visibility = Visibility.Hidden;
-                stopper.Visibility = Visibility.Hidden;
                 resultText.Text = "(";
                 foreach(string s in algorithms.data.reduct)
                 {
@@ -164,9 +138,6 @@ namespace Quick_Reduct_Visualisation
             if (stopTheCount == true)
             {
                 myTimer.Stop();
-                action.Visibility = Visibility.Hidden;
-                starter.Visibility = Visibility.Hidden;
-                stopper.Visibility = Visibility.Hidden;
                 resultText.Text = "(";
                 foreach (string s in algorithms.data.reduct)
                 {
@@ -177,7 +148,6 @@ namespace Quick_Reduct_Visualisation
                 MessageBox.Show("Reduct is: " + resultText.Text);
                 return;
             }
-            textBlox.Text = (Convert.ToInt32(textBlox.Text) + 1).ToString(); 
             for (int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
             {
                 algorithms.CalculateQuickReduct();
@@ -199,11 +169,30 @@ namespace Quick_Reduct_Visualisation
         private void StopAuto(object sender, RoutedEventArgs e)
         {
             myTimer.Stop();
+            stopper.Visibility = Visibility.Hidden;
+            starter.Visibility = Visibility.Visible;
+            oneStep.Visibility = Visibility.Visible;
         }
         private void StartAuto(object sender, RoutedEventArgs e)
         {
             myTimer.Start();
+            starter.Visibility = Visibility.Hidden;
+            stopper.Visibility = Visibility.Visible;
+            oneStep.Visibility = Visibility.Hidden;
         }
 
+        private void Restart(object sender, RoutedEventArgs e)
+        {
+            algorithms.Restart();
+            UpdateDataGrid();
+        }
+
+        private void LoadData(object sender, RoutedEventArgs e)
+        {
+            algorithms.data.GetData();
+            oneStep.Visibility = Visibility.Visible;
+            starter.Visibility = Visibility.Visible;
+            restart.Visibility = Visibility.Visible;
+        }
     }
 }

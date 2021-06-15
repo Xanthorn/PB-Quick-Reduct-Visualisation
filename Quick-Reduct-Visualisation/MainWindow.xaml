@@ -7,17 +7,35 @@
         mc:Ignorable="d"
         Title="Quick-Reduct-Visualisation" Height="450" Width="800">
     <Grid>
-        <Button Content="One Step" Name="action" Click="CellByCell"  HorizontalAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
-        <DataGrid Height="auto" Width="auto" HorizontalAlignment="Center" 
-         Name="dataGrid" VerticalAlignment="Center" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto" />
-        <DataGrid Height="auto" Width="auto" HorizontalAlignment="Right"  
-         Name="dataCountGrid" VerticalAlignment="Center" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto" />
-        <DataGrid Height="auto" Width="auto" HorizontalAlignment="Center"  
-         Name="dataResultGrid" VerticalAlignment="Bottom" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto" />
-        <Button Name="stopper" Content="Stop" Click="StopAuto" HorizontalAlignment="Left" Margin="0,227,0,0" VerticalAlignment="Top" Visibility="Visible"/>
-        <Button Name="starter" Content="Start" Click="StartAuto" HorizontalAlignment="Left" Margin="0,227,0,0" VerticalAlignment="Top" Visibility="Visible"/>
-        <TextBox HorizontalAlignment="Left" Margin="46,390,0,0" Text="1" TextWrapping="Wrap" VerticalAlignment="Top" Width="30" Name="textBlox"/>
-        <TextBox HorizontalAlignment="Center" Margin="0,23,0,0" Text="" TextWrapping="Wrap" VerticalAlignment="Top" x:Name="resultText"/>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="4*"/>
+            <RowDefinition Height="1*"/>
+        </Grid.RowDefinitions>
 
+        <Button x:Name="loadData" Content="Load Data" Click="LoadData" Visibility="Visible"/>
+
+        <TextBox Grid.Column="1" Text="" TextWrapping="Wrap" VerticalAlignment="Top" x:Name="resultText"/>
+        
+        <Button Grid.Row="1" Name="oneStep" Content="One Step" Click="CellByCell" Visibility="Hidden"/>
+        <Button Grid.Row="2" Name="stopper" Content="Stop auto" Click="StopAuto" Visibility="Hidden"/>
+        <Button Grid.Row="2" Name="starter" Content="Start auto" Click="StartAuto" Visibility="Hidden"/>
+        <Button Grid.Row="3" Name="restart" Content="Restart" Click="Restart" Visibility="Hidden"/>
+        
+        <DataGrid Name="dataGrid" Grid.Row="1" Grid.Column="1" Grid.RowSpan="3" VerticalAlignment="Stretch" 
+         HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto"    
+         HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"   
+         CanUserReorderColumns="False"  IsReadOnly="True" CanUserSortColumns = "False" AreRowDetailsFrozen="True" />
+
+        <DataGrid Name="dataCountGrid" Grid.Row="1" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Stretch" 
+        HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50" ColumnWidth="auto" IsReadOnly="True" />
+        
     </Grid>
 </Window>
