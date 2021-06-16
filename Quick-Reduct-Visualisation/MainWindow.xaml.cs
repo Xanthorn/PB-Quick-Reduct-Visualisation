@@ -61,7 +61,8 @@ namespace Quick_Reduct_Visualisation
         }
         public void UpdateDataGrid()
         {
-            DataTable dt = new DataTable();
+            // Main table
+            DataTable dt = new();
             int nbColumns = algorithms.data.dataSets.Count();
             int nbRows = algorithms.data.dataSets.Count();
             for (int i = 0; i < nbColumns + 1; i++)
@@ -88,54 +89,115 @@ namespace Quick_Reduct_Visualisation
                 dt.Rows.Add(dr);
             }
             dataGrid.ItemsSource = dt.DefaultView;
-            DataTable dt2 = new DataTable();
+
+            // Table with differences between each set
+
+            DataTable dt2 = new();
             int nbColumns2 = 2;
-            int nbRows2 = algorithms.data.differenceTableCount.Count - 1;
-            for (int i = 0; i < nbColumns2; i++)
-            {
-                if (i == 0)
-                {
-                    dt2.Columns.Add("●");
-                    continue;
-                }
-                dt2.Columns.Add("Value");
-            }
+            int nbRows2 = 3;
+
+            dt2.Columns.Add("●");
+            dt2.Columns.Add("Values");
+
             for (int row = 0; row < nbRows2; row++)
             {
-                DataRow dr2 = dt2.NewRow();
+                DataRow dr = dt2.NewRow();
                 for (int col = 0; col < nbColumns2; col++)
                 {
                     if (col == 0)
                     {
-                        dr2[col] = $"{algorithms.data.attributes[row]}";
+                        if (row == 0)
+                            dr[col] = $"Dataset #{algorithms.i + 1}";
+                        else if (row == 1)
+                            dr[col] = $"Dataset #{algorithms.j + 1}";
+                        else
+                            dr[col] = $"Differences";
+                    }
+                    else
+                    {
+                        string values = "";
+                        for(int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
+                        {
+                            if (row == 0)
+                                values += $"{algorithms.data.dataSets[algorithms.i][i]}, ";
+
+                            else if(row == 1)
+                                values += $"{algorithms.data.dataSets[algorithms.j][i]}, ";
+
+                            else
+                            {
+                                if(algorithms.data.dataSets[algorithms.i][i] != algorithms.data.dataSets[algorithms.j][i])
+                                    values += $"{algorithms.data.attributes[i]}, ";
+                            }
+
+                        }
+                        if(values != "")
+                            values = values.Remove(values.Length - 2);
+                        dr[col] = values;
+                    }
+                }
+                dt2.Rows.Add(dr);
+            }
+
+            dataDifferenceGrid.ItemsSource = dt2.DefaultView;
+
+            // Table with counters 
+
+            DataTable dt3 = new();
+            int nbColumns3 = 2;
+            int nbRows3 = algorithms.data.differenceTableCount.Count - 1;
+            for (int i = 0; i < nbColumns3; i++)
+            {
+                if (i == 0)
+                {
+                    dt3.Columns.Add("●");
+                    continue;
+                }
+                dt3.Columns.Add("Value");
+            }
+            for (int row = 0; row < nbRows3; row++)
+            {
+                DataRow dr = dt3.NewRow();
+                for (int col = 0; col < nbColumns3; col++)
+                {
+                    if (col == 0)
+                    {
+                        dr[col] = $"{algorithms.data.attributes[row]}";
                         continue;
                     }
-                    dr2[col] = algorithms.data.differenceTableCount[$"{algorithms.data.attributes[row]}"];
+                    dr[col] = algorithms.data.differenceTableCount[$"{algorithms.data.attributes[row]}"];
                 }
-                dt2.Rows.Add(dr2);
+                dt3.Rows.Add(dr);
             }
-            dataCountGrid.ItemsSource = dt2.DefaultView;
+            dataCountGrid.ItemsSource = dt3.DefaultView;
+
+            ShowResults();
         }
         private void ShowResults()
         {
-            starter.Visibility = Visibility.Visible;
-            stopper.Visibility = Visibility.Hidden;
-            oneStep.IsEnabled = false;
-            starter.IsEnabled = false;
-            stopper.IsEnabled = false;
-            prereduct.IsEnabled = false;
-            save.IsEnabled = true;
-            loadData.IsEnabled = true;
-            restart.IsEnabled = true;
-            resultText.Text = "(";
-            foreach (string s in algorithms.data.reduct)
+            if(algorithms.data.reduct.Count > 0)
             {
-                resultText.Text += s + ",";
+                resultText.Text = "R = { ";
+                foreach (string s in algorithms.data.reduct)
+                {
+                    resultText.Text += $"{s}, ";
+                }
+                resultText.Text = resultText.Text.Remove(resultText.Text.Length - 2);
+                resultText.Text += " }";
             }
-            resultText.Text = resultText.Text.Remove(resultText.Text.Length - 1);
-            resultText.Text += ")";
-            MessageBox.Show("Reduct is: " + resultText.Text);
-            return;
+            if(algorithms.stopTheCount == true)
+            {
+                starter.Visibility = Visibility.Visible;
+                stopper.Visibility = Visibility.Hidden;
+                oneStep.IsEnabled = false;
+                starter.IsEnabled = false;
+                stopper.IsEnabled = false;
+                prereduct.IsEnabled = false;
+                save.IsEnabled = true;
+                loadData.IsEnabled = true;
+                restart.IsEnabled = true;
+                MessageBox.Show(resultText.Text);
+            }
         }
         private void CalculateAndDisplay()
         {
@@ -159,10 +221,6 @@ namespace Quick_Reduct_Visualisation
         private void CellByCell(object sender, RoutedEventArgs e)
         {
             CalculateAndDisplay();
-            if (algorithms.stopTheCount == true)
-            {
-                ShowResults();
-            }
         }
         private void AutomaticCells(object sender, EventArgs e)
         {
@@ -170,16 +228,11 @@ namespace Quick_Reduct_Visualisation
             if (algorithms.stopTheCount == true)
             {
                 myTimer.Stop();
-                ShowResults();
             }
         }
         private void CellToPrereduct(object sender, EventArgs e)
         {
             CalculateAndDisplay();
-            if (algorithms.stopTheCount == true)
-            {
-                ShowResults();
-            }
             if (algorithms.tryMeNow == true)
             {
                 preductTimer.Stop();
@@ -233,6 +286,7 @@ namespace Quick_Reduct_Visualisation
             starter.Visibility = Visibility.Visible;
             starter.IsEnabled = true;
             stopper.IsEnabled = true;
+            resultText.Text = "";
         }
 
         private void LoadData(object sender, RoutedEventArgs e)
@@ -245,8 +299,6 @@ namespace Quick_Reduct_Visualisation
             {
                 algorithms = JsonConvert.DeserializeObject<Algorithms>(File.ReadAllText(algorithms.data.filePath));
                 UpdateDataGrid();
-                if (algorithms.stopTheCount == true)
-                    ShowResults();
             }
             else UpdateDataGrid();
             if (algorithms.stopTheCount == true)
@@ -254,6 +306,7 @@ namespace Quick_Reduct_Visualisation
             starter.IsEnabled = true;
             stopper.IsEnabled = true;
             EnableCommonButtons();
+            resultText.Text = "";
         }
     }
 }
