@@ -5,11 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Quick_Reduct_Visualisation"
         mc:Ignorable="d"
-        Title="Quick-Reduct-Visualisation" Height="450" Width="800">
+        Title="Quick-Reduct-Visualisation" Height="788" Width="1366">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
-            <ColumnDefinition Width="4*"/>
+            <ColumnDefinition Width="3*"/>
+            <ColumnDefinition Width="3*"/>
             <ColumnDefinition Width="1*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -23,7 +24,7 @@
 
         <Button x:Name="loadData" Content="Load Data" Click="LoadData" Visibility="Visible"/>
 
-        <TextBox Grid.Column="1" Text="" TextWrapping="Wrap" VerticalAlignment="Top" x:Name="resultText"
+        <TextBox Grid.Column="1" Grid.ColumnSpan="2" Text="" TextWrapping="Wrap" VerticalAlignment="Top" x:Name="resultText"
          TextAlignment="Center" />
         
         <Button Grid.Row="1" Name="oneStep" Content="One Step" Click="CellByCell" Visibility="Visible" IsEnabled="False"/>
@@ -31,22 +32,30 @@
         <Button Grid.Row="2" Name="starter" Content="Start auto" Click="StartAuto" Visibility="Visible" IsEnabled="False"/>
         <Button Grid.Row="3" Name="prereduct" Content="Prereduct" Click="CellToPrereductTimer" Visibility="Visible" IsEnabled="False"/>
         <Button Grid.Row="4" Name="restart" Content="Restart" Click="Restart" Visibility="Visible" IsEnabled="False"/>
-        <Button Grid.Row="4" Grid.Column="2" Name="save" Content="Save state to file" Click="DataToJson" Visibility="Visible" IsEnabled="False"/>
+        <Button Grid.Column="3" Name="showModify" Content="Modify data" Click="ShowModifyData" Visibility="Visible" IsEnabled="False"/>
+        <Button Grid.Column="3" Name="hideModify" Content="Close Modifying" Click="HideModifyData" Visibility="Hidden" IsEnabled="False"/>
+        <Button Grid.Row="4" Grid.Column="3" Name="save" Content="Save state to file" Click="DataToJson" Visibility="Visible" IsEnabled="False"/>
         
         <DataGrid Name="dataGrid" Grid.Row="1" Grid.Column="1" Grid.RowSpan="4" VerticalAlignment="Stretch" 
          HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50"  ColumnWidth="auto"    
          HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"   
          CanUserReorderColumns="False"  IsReadOnly="True" CanUserSortColumns = "False" AreRowDetailsFrozen="True" />
 
-        <DataGrid Name="dataDifferenceGrid" Grid.Row="1" Grid.Column="2" Grid.RowSpan="1" VerticalAlignment="Stretch" 
+
+        <DataGrid Name="dataDifferenceGrid" Grid.Row="1" Grid.Column="3" Grid.RowSpan="1" VerticalAlignment="Stretch" 
          HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50" ColumnWidth="auto" IsReadOnly="True" 
          HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"   
          CanUserReorderColumns="False" CanUserSortColumns = "False" AreRowDetailsFrozen="True" />
 
-        <DataGrid Name="dataCountGrid" Grid.Row="2" Grid.Column="2" Grid.RowSpan="2" VerticalAlignment="Stretch" 
+        <DataGrid Name="dataCountGrid" Grid.Row="2" Grid.Column="3" Grid.RowSpan="2" VerticalAlignment="Stretch" 
          HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50" ColumnWidth="auto" IsReadOnly="True" 
          HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"   
          CanUserReorderColumns="False" CanUserSortColumns = "False" AreRowDetailsFrozen="True" />
 
+        <DataGrid Name="modifyDataGrid" Grid.Row="1" Grid.Column="1" Grid.RowSpan="4" Grid.ColumnSpan="2" VerticalAlignment="Stretch" 
+         HorizontalAlignment="Stretch" RowHeight="30" MinColumnWidth="50" ColumnWidth="auto" Visibility="Hidden" 
+         HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"   
+         CanUserReorderColumns="False" CanUserSortColumns = "False" AreRowDetailsFrozen="True" CellEditEnding="modifyDataGrid_CellEditEnding"/>
+        
     </Grid>
 </Window>

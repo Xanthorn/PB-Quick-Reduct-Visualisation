@@ -47,7 +47,6 @@ namespace Quick_Reduct_Visualisation.Models
             stopTheCount = false;
             for (int i = 0; i < data.attributes.Length; i++)
                 data.differenceTableCount[$"{data.attributes[i]}"] = 0;
-           
         }
 
         private void CalculateDifference()
@@ -152,7 +151,6 @@ namespace Quick_Reduct_Visualisation.Models
         {
             data.reduct.Add(data.differenceTableCount.Aggregate((l, r) => l.Value > r.Value ? l : r).Key);
         }
-        
     }
 }
 
