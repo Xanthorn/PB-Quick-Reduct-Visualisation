@@ -203,7 +203,6 @@ namespace Quick_Reduct_Visualisation.Models
         {
             data.reduct.Add(data.differenceTableCount.Aggregate((l, r) => l.Value > r.Value ? l : r).Key);
         }
-        
     }
 }
 
