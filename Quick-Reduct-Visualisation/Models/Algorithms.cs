@@ -12,6 +12,12 @@ namespace Quick_Reduct_Visualisation.Models
         public int i, j, k, cycles;
         public bool tryMeNow;
         public bool stopTheCount = false;
+        public Dictionary<string, List<string>>[] graphContains;
+        public Dictionary<string, double> graphPosX=new();
+        public Dictionary<string, double> graphPosY=new();
+        public List<KeyValuePair<string,string>> edges = new();
+        public string currentNode = "";
+        public List<KeyValuePair<string,string>> recreateRoute = new();
         public Algorithms()
         {
             data = new();
@@ -20,6 +26,50 @@ namespace Quick_Reduct_Visualisation.Models
             k = 0;
             tryMeNow = false;
             cycles = 0;
+        }
+        public void FillGraphContains()
+        {
+            string stringer = "";
+            graphContains = new Dictionary< string, List<string>>[data.attributes.Count()];
+            for (int i = 0; i < data.attributes.Count() ; i++)
+            {
+                graphContains[i] = new Dictionary<string, List<string>>();
+            }
+            graphContains[0].Add(stringer, data.attributes.ToList());
+            for(int i=0;i< data.attributes.Count() - 1;i++)
+            {
+                foreach(List<string> list in graphContains[i].Values)
+                {
+                    if(list.Contains(data.attributes[data.attributes.Count()-1]))
+                    {
+                        list.Remove(data.attributes[data.attributes.Count() - 1]);
+                    }
+                    foreach(string s in list)
+                    {
+                        List<string> lister = list.ToList();
+                        lister.Remove(s);
+                        string keyer = "";
+                        foreach(string es in lister)
+                        {
+                            keyer += es;
+                        }
+                        string upperkeyer = "";
+                        foreach (string es in list)
+                        {
+                            upperkeyer += es;
+                        }
+                        if (!graphContains[i+1].ContainsKey(keyer))
+                        {
+                            graphContains[i + 1].Add(keyer, lister);
+                            graphPosX.Add(keyer, 0);
+                            graphPosY.Add(keyer, 0);
+                            
+                        }
+
+                        edges.Add(new KeyValuePair<string, string>(keyer, upperkeyer));
+                    }
+                }
+            }
         }
 
         public void CalculateQuickReduct()
@@ -41,13 +91,14 @@ namespace Quick_Reduct_Visualisation.Models
             j = 0;
             k = 0;
             tryMeNow = false;
+            recreateRoute = new List<KeyValuePair<string,string>>();
+            currentNode = "";
             data.differenceTable = new string[data.dataSets.Count(), data.dataSets.Count(), data.attributes.Length - 1];
             data.differenceTableResults = new string[data.dataSets.Count(), data.dataSets.Count()];
             data.reduct = new();
             stopTheCount = false;
             for (int i = 0; i < data.attributes.Length; i++)
                 data.differenceTableCount[$"{data.attributes[i]}"] = 0;
-           
         }
 
         private void CalculateDifference()

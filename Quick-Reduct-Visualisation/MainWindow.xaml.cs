@@ -3,6 +3,7 @@ using Quick_Reduct_Visualisation.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -47,9 +48,9 @@ namespace Quick_Reduct_Visualisation
             //File.WriteAllText(savePath, jsonData);
 
             Microsoft.Win32.SaveFileDialog fileDialog = new Microsoft.Win32.SaveFileDialog();
-            fileDialog.FileName = "savestate"; 
-            fileDialog.DefaultExt = ".kek"; 
-            fileDialog.Filter = "kek savestates (*.kek)|*.kek"; 
+            fileDialog.FileName = "savestate";
+            fileDialog.DefaultExt = ".kek";
+            fileDialog.Filter = "kek savestates (*.kek)|*.kek";
 
             bool? result = fileDialog.ShowDialog();
 
@@ -57,7 +58,7 @@ namespace Quick_Reduct_Visualisation
             {
                 File.WriteAllText(fileDialog.FileName, jsonData);
             }
-            
+
         }
         public void UpdateDataGrid()
         {
@@ -116,22 +117,22 @@ namespace Quick_Reduct_Visualisation
                     else
                     {
                         string values = "";
-                        for(int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
+                        for (int i = 0; i < algorithms.data.dataSets[i].Length - 1; i++)
                         {
                             if (row == 0)
                                 values += $"{algorithms.data.dataSets[algorithms.i][i]}, ";
 
-                            else if(row == 1)
+                            else if (row == 1)
                                 values += $"{algorithms.data.dataSets[algorithms.j][i]}, ";
 
                             else
                             {
-                                if(algorithms.data.dataSets[algorithms.i][i] != algorithms.data.dataSets[algorithms.j][i])
+                                if (algorithms.data.dataSets[algorithms.i][i] != algorithms.data.dataSets[algorithms.j][i])
                                     values += $"{algorithms.data.attributes[i]}, ";
                             }
 
                         }
-                        if(values != "")
+                        if (values != "")
                             values = values.Remove(values.Length - 2);
                         dr[col] = values;
                     }
@@ -175,7 +176,7 @@ namespace Quick_Reduct_Visualisation
         }
         private void ShowResults()
         {
-            if(algorithms.data.reduct.Count > 0)
+            if (algorithms.data.reduct.Count > 0)
             {
                 resultText.Text = "R = { ";
                 foreach (string s in algorithms.data.reduct)
@@ -185,7 +186,7 @@ namespace Quick_Reduct_Visualisation
                 resultText.Text = resultText.Text.Remove(resultText.Text.Length - 2);
                 resultText.Text += " }";
             }
-            if(algorithms.stopTheCount == true)
+            if (algorithms.stopTheCount == true)
             {
                 starter.Visibility = Visibility.Visible;
                 stopper.Visibility = Visibility.Hidden;
@@ -216,6 +217,40 @@ namespace Quick_Reduct_Visualisation
                 algorithms.stopTheCount = true;
             }
             UpdateDataGrid();
+            if (algorithms.tryMeNow == true && algorithms.stopTheCount == false)
+            {
+                string tempString = "";
+                foreach (KeyValuePair<string, string> pair in algorithms.edges)
+                {
+                    if (pair.Key == algorithms.currentNode)
+                    {
+                        if (pair.Value.Contains(algorithms.data.reduct.Last()))
+                            tempString = pair.Value;
+                    }
+                }
+                KeyValuePair<string, string> kvp = new KeyValuePair<string, string>(algorithms.currentNode, tempString);
+                algorithms.currentNode = tempString;
+                foreach (KeyValuePair<string, string> pair in algorithms.edges)
+                {
+                    if (pair.Key == algorithms.currentNode)
+                    {
+                        DrawGreenEdge(pair);
+                    }
+                }
+                DrawRedEdge(kvp);
+                algorithms.recreateRoute.Add(kvp);
+
+            }
+            if(algorithms.tryMeNow == true && algorithms.stopTheCount == true)
+            {
+                foreach (KeyValuePair<string, string> pair in algorithms.edges)
+                {
+                    if (pair.Key == algorithms.currentNode)
+                    {
+                        DrawGrayEdge(pair);
+                    }
+                }
+            }
             algorithms.k = 0;
         }
         private void CellByCell(object sender, RoutedEventArgs e)
@@ -287,6 +322,25 @@ namespace Quick_Reduct_Visualisation
             starter.IsEnabled = true;
             stopper.IsEnabled = true;
             resultText.Text = "";
+            IEnumerable<TextBlock> rtexts = canvas.Children.OfType<TextBlock>();
+            IEnumerable<Rectangle> rrects = canvas.Children.OfType<Rectangle>();
+            IEnumerable<Line> rlines = canvas.Children.OfType<Line>();
+            List<TextBlock> texts = rtexts.ToList();
+            List<Line> lines = rlines.ToList();
+            List<Rectangle> rects = rrects.ToList();
+            foreach (TextBlock item in texts)
+            {
+                canvas.Children.Remove(item);
+            }
+            foreach (Rectangle item in rects)
+            {
+                canvas.Children.Remove(item);
+            }
+            foreach (Line item in lines)
+            {
+                canvas.Children.Remove(item);
+            }
+            DrawGraph();
         }
 
         private void LoadData(object sender, RoutedEventArgs e)
@@ -295,6 +349,9 @@ namespace Quick_Reduct_Visualisation
             algorithms.data.GetData();
             if (algorithms.data.filePath == null)
                 return;
+            string tempFile = algorithms.data.filePath;
+            if(!algorithms.data.filePath.Contains(".kek"))
+                algorithms.FillGraphContains();
             else if (algorithms.data.filePath.Contains(".kek"))
             {
                 algorithms = JsonConvert.DeserializeObject<Algorithms>(File.ReadAllText(algorithms.data.filePath));
@@ -307,6 +364,232 @@ namespace Quick_Reduct_Visualisation
             stopper.IsEnabled = true;
             EnableCommonButtons();
             resultText.Text = "";
+            DrawGraph();
+            if(tempFile.Contains(".kek"))
+            {
+                RedrawGraph();
+            }
+        }
+        public void DrawGraph()
+        {
+            double top = 0;
+            double left = 40;
+            TextBlock tempTextBlock = new TextBlock();
+            tempTextBlock.Text = "\u2205";
+            Canvas.SetTop(tempTextBlock, top);
+            Canvas.SetLeft(tempTextBlock, left);
+            algorithms.graphPosX[""] = left + 3;
+            algorithms.graphPosY[""] = top;
+
+            Rectangle temprect = new Rectangle();
+            temprect.Fill = Brushes.Red;
+            temprect.Width = 15;
+            temprect.Height = 20;
+            Canvas.SetTop(temprect, top);
+            Canvas.SetLeft(temprect, left - 2);
+            canvas.Children.Add(temprect);
+            canvas.Children.Add(tempTextBlock);
+
+            
+            for (int i = algorithms.graphContains.Count() - 2; i >= 0; i--)
+            {
+                top += 100;
+                left = 40;
+                foreach (List<string> list in algorithms.graphContains[i].Values)
+                {
+                    string keyer = "";
+                    foreach (string es in list)
+                    {
+                        keyer += es;
+                    }
+                    string teststring = "";
+                    foreach (string s in list)
+                    {
+                        var chars = s.Split(" ").Select(y => y[0]).ToList();
+                        for (int m = 0; m < chars.Count; m++)
+                        {
+                            teststring += chars[m];
+                        }
+                        teststring += ",";
+                    }
+                    if (teststring.Length > 0)
+                        teststring = teststring.Remove(teststring.Length - 1);
+
+                    FormattedText textSize = new FormattedText(
+                        teststring,
+                        CultureInfo.GetCultureInfo("en-us"),
+                        FlowDirection.LeftToRight,
+                        new Typeface("Verdana"),
+                        32,
+                        Brushes.Black);
+
+                    TextBlock dynamicTextBlock = new TextBlock();
+                    dynamicTextBlock.Text = teststring;
+                    keyer = keyer.Replace(" ", "_");
+                    dynamicTextBlock.Name = keyer;
+                    Canvas.SetTop(dynamicTextBlock, top);
+                    Canvas.SetLeft(dynamicTextBlock, left);
+                    Rectangle rect = new Rectangle();
+                    rect.Fill = Brushes.Gray;
+                    rect.Width = textSize.Width / 2;
+                    rect.Height = 20;
+                    rect.Name = keyer;
+                    keyer = keyer.Replace("_", " ");
+                    Canvas.SetTop(rect, top);
+                    Canvas.SetLeft(rect, left - (textSize.Width / 12));
+                    canvas.Children.Add(rect);
+                    canvas.Children.Add(dynamicTextBlock);
+                    algorithms.graphPosX[keyer] = left + textSize.Width / 4;
+                    algorithms.graphPosY[keyer] = top;
+                    left += textSize.Width / 2 + 50;
+
+                }
+
+            }
+            foreach (KeyValuePair<string, string> pair in algorithms.edges)
+            {
+                Line line = new Line();
+
+                line.X1 = algorithms.graphPosX[pair.Key];
+                line.X2 = algorithms.graphPosX[pair.Value];
+
+                line.Y1 = algorithms.graphPosY[pair.Key] + 20;
+                line.Y2 = algorithms.graphPosY[pair.Value];
+
+                line.SnapsToDevicePixels = true;
+                line.SetValue(RenderOptions.EdgeModeProperty, EdgeMode.Aliased);
+                line.StrokeThickness = 2;
+                line.Stroke = Brushes.LightSteelBlue;
+                line.Visibility = Visibility.Visible;
+
+                canvas.Children.Add(line);
+            }
+            foreach (KeyValuePair<string, string> pair in algorithms.edges)
+            {
+                if (pair.Key == "")
+                {
+                    DrawGreenEdge(pair);
+                }
+            }
+        }
+        public void RedrawGraph()
+        {
+            foreach (KeyValuePair<string,string> kpair in algorithms.recreateRoute)
+            {
+                string tempString = "";
+                foreach (KeyValuePair<string, string> pair in algorithms.edges)
+                {
+                    if (pair.Key == kpair.Key)
+                    {
+                        if (pair.Value.Contains(kpair.Value))
+                            tempString = pair.Value;
+                    }
+                }
+                KeyValuePair<string, string> kvp = new KeyValuePair<string, string>(kpair.Key, tempString);
+                algorithms.currentNode = tempString;
+                foreach (KeyValuePair<string, string> pair in algorithms.edges)
+                {
+                    if (pair.Key == algorithms.currentNode)
+                    {
+                        DrawGreenEdge(pair);
+                    }
+                }
+                DrawRedEdge(kvp); 
+            }
+            if (algorithms.stopTheCount == true)
+            {
+                foreach (KeyValuePair<string, string> pair in algorithms.edges)
+                {
+                    if (pair.Key == algorithms.currentNode)
+                    {
+                        DrawGrayEdge(pair);
+                    }
+                }
+            }
+        }
+        public void DrawRedEdge(KeyValuePair<string, string> pair)
+        {
+            Line line = new Line();
+
+            line.X1 = algorithms.graphPosX[pair.Key];
+            line.X2 = algorithms.graphPosX[pair.Value];
+
+            line.Y1 = algorithms.graphPosY[pair.Key] + 20;
+            line.Y2 = algorithms.graphPosY[pair.Value];
+
+            line.SnapsToDevicePixels = true;
+            line.SetValue(RenderOptions.EdgeModeProperty, EdgeMode.Aliased);
+            line.StrokeThickness = 2;
+            line.Stroke = Brushes.Red;
+            line.Visibility = Visibility.Visible;
+
+            string stringHelper = pair.Value;
+            stringHelper = stringHelper.Replace(" ", "_");
+            canvas.Children.Add(line);
+            Rectangle rect = new Rectangle();
+            IEnumerable<Rectangle> rectangles = canvas.Children.OfType<Rectangle>();
+            foreach (var rekt in rectangles)
+            {
+                if(rekt.Name==pair.Value)
+                {
+                    rect = rekt;
+                    canvas.Children.Remove(rekt);
+                    break;
+                }
+            }
+            rect.Fill = Brushes.Red;
+            canvas.Children.Add(rect);
+
+            TextBlock txt = new TextBlock();
+            IEnumerable<TextBlock> texts = canvas.Children.OfType<TextBlock>();
+            foreach (var txtes in texts)
+            {
+                if (txtes.Name == pair.Value)
+                {
+                    txt = txtes;
+                    canvas.Children.Remove(txtes);
+                    break;
+                }
+            }
+            
+            canvas.Children.Add(txt);
+        }
+        public void DrawGreenEdge(KeyValuePair<string, string> pair)
+        {
+            Line line = new Line();
+
+            line.X1 = algorithms.graphPosX[pair.Key];
+            line.X2 = algorithms.graphPosX[pair.Value];
+
+            line.Y1 = algorithms.graphPosY[pair.Key] + 20;
+            line.Y2 = algorithms.graphPosY[pair.Value];
+
+            line.SnapsToDevicePixels = true;
+            line.SetValue(RenderOptions.EdgeModeProperty, EdgeMode.Aliased);
+            line.StrokeThickness = 2;
+            line.Stroke = Brushes.Green;
+            line.Visibility = Visibility.Visible;
+
+            canvas.Children.Add(line);
+        }
+        public void DrawGrayEdge(KeyValuePair<string, string> pair)
+        {
+            Line line = new Line();
+
+            line.X1 = algorithms.graphPosX[pair.Key];
+            line.X2 = algorithms.graphPosX[pair.Value];
+
+            line.Y1 = algorithms.graphPosY[pair.Key] + 20;
+            line.Y2 = algorithms.graphPosY[pair.Value];
+
+            line.SnapsToDevicePixels = true;
+            line.SetValue(RenderOptions.EdgeModeProperty, EdgeMode.Aliased);
+            line.StrokeThickness = 2;
+            line.Stroke = Brushes.LightSteelBlue;
+            line.Visibility = Visibility.Visible;
+
+            canvas.Children.Add(line);
+            
         }
     }
 }
