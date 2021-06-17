@@ -3,6 +3,7 @@ using Quick_Reduct_Visualisation.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,7 @@ namespace Quick_Reduct_Visualisation
     /// </summary>
     public partial class MainWindow : Window
     {
+        public int reduct = 0;
         public Algorithms algorithms = new();
         public DispatcherTimer myTimer, preductTimer;
         public MainWindow()
@@ -37,7 +39,6 @@ namespace Quick_Reduct_Visualisation
             preductTimer = new DispatcherTimer();
             preductTimer.Tick += new EventHandler(CellToPrereduct);
             preductTimer.Interval = new TimeSpan(0, 0, 0, 0, 1);
-
         }
         public void DataToJson(object sender, RoutedEventArgs e)
         {
@@ -175,7 +176,7 @@ namespace Quick_Reduct_Visualisation
         }
         private void ShowResults()
         {
-            if(algorithms.data.reduct.Count > 0)
+            if(reduct < algorithms.data.reduct.Count)
             {
                 resultText.Text = "R = { ";
                 foreach (string s in algorithms.data.reduct)
@@ -267,6 +268,8 @@ namespace Quick_Reduct_Visualisation
             restart.IsEnabled = true;
             save.IsEnabled = true;
             loadData.IsEnabled = true;
+            showModify.IsEnabled = true;
+            hideModify.IsEnabled = true;
         }
         private void DisableCommonButtons()
         {
@@ -275,6 +278,8 @@ namespace Quick_Reduct_Visualisation
             restart.IsEnabled = false;
             save.IsEnabled = false;
             loadData.IsEnabled = false;
+            showModify.IsEnabled = false;
+            hideModify.IsEnabled = false;
         }
 
         private void Restart(object sender, RoutedEventArgs e)
@@ -307,6 +312,70 @@ namespace Quick_Reduct_Visualisation
             stopper.IsEnabled = true;
             EnableCommonButtons();
             resultText.Text = "";
+        }
+
+        private void ShowModifyData(object sender, RoutedEventArgs e)
+        {
+            DisableCommonButtons();
+            showModify.Visibility = Visibility.Hidden;
+            hideModify.Visibility = Visibility.Visible;
+            hideModify.IsEnabled = true;
+            starter.IsEnabled = false;
+            modifyDataGrid.Visibility = Visibility.Visible;
+            DataTable dt = new();
+            int nbColumns = algorithms.data.attributes.Length + 1;
+            int nbRows = algorithms.data.dataSets.Count();
+            for (int i = 0; i < nbColumns; i++)
+            {
+                if (i == 0)
+                {
+                    dt.Columns.Add("●");
+                    continue;
+                }   
+                else
+                dt.Columns.Add($"{algorithms.data.attributes[i - 1]}");
+                
+            }
+            for (int row = 0; row < nbRows; row++)
+            {
+                DataRow dr = dt.NewRow();
+                for (int col = 0; col < nbColumns; col++)
+                {
+                    if (col == 0)
+                    {
+                        dr[col] = $"Dataset #{row + 1}";
+                        continue;
+                    }
+                    else
+                        dr[col] = algorithms.data.dataSets[row][col - 1];
+                }
+                dt.Rows.Add(dr);
+            }
+            modifyDataGrid.ItemsSource = dt.DefaultView;
+        }
+        private void HideModifyData(object sender, RoutedEventArgs e)
+        {
+            EnableCommonButtons();
+            hideModify.Visibility = Visibility.Hidden;
+            showModify.Visibility = Visibility.Visible;
+            hideModify.IsEnabled = false;
+            starter.IsEnabled = true;
+            modifyDataGrid.Visibility = Visibility.Hidden;
+            algorithms.Restart();
+            UpdateDataGrid();
+            EnableCommonButtons();
+            stopper.Visibility = Visibility.Hidden;
+            starter.Visibility = Visibility.Visible;
+            starter.IsEnabled = true;
+            stopper.IsEnabled = true;
+            resultText.Text = "";
+        }
+
+            private void modifyDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            int rowIndex = modifyDataGrid.Items.IndexOf(e.Row.Item);
+            int colIndex = e.Column.DisplayIndex;
+            algorithms.data.dataSets[rowIndex][colIndex - 1] = e.EditingElement.ToString().Remove(0, 33);
         }
     }
 }
