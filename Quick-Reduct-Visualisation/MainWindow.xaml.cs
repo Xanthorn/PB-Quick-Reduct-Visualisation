@@ -371,7 +371,7 @@ namespace Quick_Reduct_Visualisation
             resultText.Text = "";
         }
 
-            private void modifyDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        private void modifyDataGrid_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
         {
             int rowIndex = modifyDataGrid.Items.IndexOf(e.Row.Item);
             int colIndex = e.Column.DisplayIndex;

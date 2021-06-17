@@ -41,7 +41,12 @@ namespace Quick_Reduct_Visualisation.Models
         {
             // Get file path
             GetFilePath();
-            if (filePath==null||filePath.Contains(".kek"))
+
+            while(filePath == null)
+            {
+                GetFilePath();
+            }
+            if (filePath.Contains(".kek"))
             {
                 return;
             }
